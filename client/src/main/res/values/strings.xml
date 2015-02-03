@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Client</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="bind">Bind</string>
+    <string name="unbind">Unbind</string>
+    <string name="call_remote">Call Remote</string>
+</resources>
