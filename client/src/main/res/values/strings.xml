@@ -6,4 +6,7 @@
     <string name="bind">Bind</string>
     <string name="unbind">Unbind</string>
     <string name="call_remote">Call Remote</string>
+    <string name="get_participators">Get Participators</string>
+    <string name="join">Join</string>
+    <string name="leave">Leave</string>
 </resources>

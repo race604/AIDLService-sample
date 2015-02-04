@@ -3,17 +3,21 @@ package com.race604.client;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.v7.app.ActionBarActivity;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.race604.servicelib.IRemoteService;
+
+import java.util.List;
+import java.util.Random;
 
 
 public class MainActivity extends ActionBarActivity implements View.OnClickListener {
@@ -22,6 +26,16 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
     private IRemoteService mService;
     private boolean mIsBound = false;
+    private boolean mIsJoin = false;
+
+    private IBinder mToken = new Binder();
+    private Random mRand = new Random();
+
+    private Button mJoinBtn;
+
+    private ListView mList;
+
+    private ArrayAdapter<String> mAdapter;
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -47,11 +61,19 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         findViewById(R.id.bind).setOnClickListener(this);
         findViewById(R.id.unbind).setOnClickListener(this);
         findViewById(R.id.call).setOnClickListener(this);
+        findViewById(R.id.get_participators).setOnClickListener(this);
+
+        mList = (ListView) findViewById(R.id.list);
+        mJoinBtn = (Button) findViewById(R.id.join);
+        mJoinBtn.setOnClickListener(this);
+
+        mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
+        mList.setAdapter(mAdapter);
     }
 
     private void callRemote() {
 
-        if (mService != null) {
+        if (isServiceReady()) {
             try {
                 int result = mService.someOperate(1, 2);
                 Toast.makeText(this, "Remote call return: " + result, Toast.LENGTH_SHORT).show();
@@ -59,8 +81,15 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 e.printStackTrace();
                 Toast.makeText(this, "Remote call error!", Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+    private boolean isServiceReady() {
+        if (mService != null) {
+            return true;
         } else {
             Toast.makeText(this, "Service is not available yet!", Toast.LENGTH_SHORT).show();
+            return false;
         }
     }
 
@@ -91,6 +120,47 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             case R.id.call:
                 callRemote();
                 break;
+            case R.id.join:
+                toggleJoin();
+                break;
+            case R.id.get_participators:
+                updateParticipators();
+                break;
+        }
+    }
+
+    private void updateParticipators() {
+        if (!isServiceReady()) {
+            return;
+        }
+
+        try {
+            List<String> participators = mService.getParticipators();
+            mAdapter.clear();
+            mAdapter.addAll(participators);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void toggleJoin() {
+        if (!isServiceReady()) {
+            return;
+        }
+
+        try {
+            if (!mIsJoin) {
+                String name = "Client:" + mRand.nextInt(10);
+                mService.join(mToken, name);
+                mJoinBtn.setText(R.string.leave);
+                mIsJoin = true;
+            } else {
+                mService.leave(mToken);
+                mJoinBtn.setText(R.string.join);
+                mIsJoin = false;
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
         }
     }
 }
