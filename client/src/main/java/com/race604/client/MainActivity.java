@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.race604.servicelib.IParticipateCallback;
 import com.race604.servicelib.IRemoteService;
 
 import java.util.List;
@@ -27,11 +28,13 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     private IRemoteService mService;
     private boolean mIsBound = false;
     private boolean mIsJoin = false;
+    private boolean mIsRegistered = false;
 
     private IBinder mToken = new Binder();
     private Random mRand = new Random();
 
     private Button mJoinBtn;
+    private Button mRegisterBtn;
 
     private ListView mList;
 
@@ -53,6 +56,18 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         }
     };
 
+    private IParticipateCallback mParticipateCallback = new IParticipateCallback.Stub() {
+
+        @Override
+        public void onParticipate(String name, boolean joinOrLeave) throws RemoteException {
+            if (joinOrLeave) {
+                mAdapter.add(name);
+            } else {
+                mAdapter.remove(name);
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,9 +78,13 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         findViewById(R.id.call).setOnClickListener(this);
         findViewById(R.id.get_participators).setOnClickListener(this);
 
+
         mList = (ListView) findViewById(R.id.list);
         mJoinBtn = (Button) findViewById(R.id.join);
         mJoinBtn.setOnClickListener(this);
+
+        mRegisterBtn = (Button) findViewById(R.id.register_callback);
+        mRegisterBtn.setOnClickListener(this);
 
         mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         mList.setAdapter(mAdapter);
@@ -126,6 +145,29 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             case R.id.get_participators:
                 updateParticipators();
                 break;
+            case R.id.register_callback:
+                toggleRegisterCallback();
+                break;
+        }
+    }
+
+    private void toggleRegisterCallback() {
+        if (!isServiceReady()) {
+            return;
+        }
+
+        try {
+            if (mIsRegistered) {
+                mService.unregisterParticipateCallback(mParticipateCallback);
+                mRegisterBtn.setText(R.string.register);
+                mIsRegistered = false;
+            } else {
+                mService.registerParticipateCallback(mParticipateCallback);
+                mRegisterBtn.setText(R.string.unregister);
+                mIsRegistered = true;
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
         }
     }
 

@@ -40,6 +40,12 @@
         android:layout_height="wrap_content"
         android:text="@string/get_participators"/>
 
+    <Button
+        android:id="@+id/register_callback"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/register"/>
+
     <ListView
         android:id="@+id/list"
         android:layout_width="match_parent"

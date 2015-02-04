@@ -9,4 +9,6 @@
     <string name="get_participators">Get Participators</string>
     <string name="join">Join</string>
     <string name="leave">Leave</string>
+    <string name="register">Register Callback</string>
+    <string name="unregister">Unregister Callback</string>
 </resources>
